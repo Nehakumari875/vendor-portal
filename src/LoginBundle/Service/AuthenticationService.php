@@ -11,6 +11,7 @@
 
  use Pimcore\Model\User;
  use Pimcore\Tool\Authentication;
+ use Symfony\Component\HttpFoundation\Session\Session;
 /**
  * Authentication Service contains the user authentication of pimcore user
  * @class: AuthenticationService
@@ -38,11 +39,11 @@ class AuthenticationService
        if($checkuser){
         $userValidity=Authentication::authenticatePlaintext($currentUser,$currentPass);
                 //check if username and password are correct
+                
         if($userValidity){
           $userId = $userValidity->getId();
                     //Generate token
-          $token=$this->generateToken($currentUser,$currentPass); 
-          $session->start();
+          $token=$this->generateToken($currentUser,$currentPass);
           $session->set('token',$token); 
           $session->set('username',$currentUser); 
           $session->set('userid',$userId); 

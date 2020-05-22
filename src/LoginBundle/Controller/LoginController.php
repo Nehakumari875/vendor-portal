@@ -18,6 +18,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\SessionValueResolver;
+use Symfony\Component\HttpFoundation\Session\Attribute\NamespacedAttributeBag;
+use Symfony\Component\HttpFoundation\Session\Session;
+
 /**
  * This class handles all the functionality regarding user authentication
  *
@@ -33,7 +36,7 @@ class LoginController extends FrontendController
 
     public function __construct()
     {
-        $session = new SessionInterface();
+        $session = new Session();
         $this->session = $session;
     }
 
@@ -50,7 +53,6 @@ class LoginController extends FrontendController
     public function loginAction(Request $request)
     {
         try {
-
             if ($this->get('session')->get('token')) {
                 return $this->redirect('/dashboard');
             }
@@ -65,11 +67,11 @@ class LoginController extends FrontendController
                     $formData = $form->getData();
                     $currentUser = $formData["username"];
                     $currentPass = $formData["password"];
-
                     $userObject = new AuthenticationService();
-                    $authenticate = $userObject->userAuthentication($currentUser, $currentPass, $this->session);
+                    $session = new Session();
+                    $authenticate = $userObject->userAuthentication($currentUser, $currentPass, $session);
                     if($authenticate){
-
+                        
                         $userId = $this->get('session')->get('userid');
                         $userInfo = User::getById($userId);
                         $portalUserListing = new PortalUser\Listing();
@@ -106,10 +108,11 @@ class LoginController extends FrontendController
      */
     public function logoutAction(Request $request)
     {
-        $this->session->set('token', null); //set token value null
-        $this->session->set('username', null); //set username value null
-        $this->session->set('userid', null); //set username value null
-        $this->session->invalidate(); //here we can now clear the session.
+        $sessionData = $request->getSession();
+        $sessionData->set('token', null); //set token value null
+        $sessionData->set('username', null); //set username value null
+        $sessionData->set('userid', null); //set username value null
+        $sessionData->invalidate(); //here we can now clear the session.
         return $this->redirect('/login'); //redirect to login page
 
     }
